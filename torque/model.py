@@ -1,17 +1,4 @@
 
-
-
-
-"""
-MySQL Workbench -> Internal Structure
-    Internal Structure -> SQLAlchemy
-    Internal Structure -> SQLLite
-    Internal Structure <-> pickle
-    Internal Sturcutre <-> Torque XML file
-
-"""
-
-
 class ForeignKey(object):
     def __init__(self, name=None, referencedColumn=None, restrictedColumn=None):
         self.name = name
@@ -56,55 +43,4 @@ class Database(object):
         self.table = []
     def __repr__(self):
         pass
-		
-
-
 	
-	
-	
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""
-Designer data structure -> Torque XML
-
-Torque XML -> SQLAlchemy
-Torque XML -> SQLLite class
-
-
-
-def importMySQLStudio(grt):
-
-
-import xml.dom.minidom
-import xml.etree.ElementTree
-
-
-doc = xml.dom.minidom.Document()
-
-database = doc.createElement('database')
-database.setAttribute('name', '')
-doc.appendChild(database)
-
-table = doc.createElement('table')
-table.setAttribute('name', 'security')
-database.appendChild(table)
-
-
-
-doc.print
-
-"""
