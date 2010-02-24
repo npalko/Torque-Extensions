@@ -12,8 +12,6 @@ from __future__ import print_function
 * should we use lists instead of a dict()?
 """
 
-import pickle
-
 
 class IndexOrder(object):
     ASC = 0
@@ -24,26 +22,39 @@ class KeyAction(object):
     RESTRICT = 2
     NONE = 3
 class SQLType(object):
-    DECIMAL = 0
-    NCHAR = 1
-    NVARCHAR = 2
-    INT = 3
-    BIGINT = 4
-    DATE = 5  
+    DECIMAL = 0	# don't support NUMERIC, it's redundant
+    CHAR = 1
+    VARCHAR = 2
+    NCHAR = 3
+    NVARCHAR = 4
+    INT = 5
+    BIGINT = 6
+    DATE = 7
+    DATETIME = 8
+    TIMESTAMP = 9
+    BIT = 10
 
 class ForeignKey(object):
     def __init__(self, name=None, reference=None, restrict=None, 
-                 onUpdate=KeyAction.RESTRICT, onDelete=KeyAction.RESTRICT):
+                 onUpdate=KeyAction.RESTRICT, onDelete=KeyAction.RESTRICT):	
         self.name = name
         self.reference = reference
         self.restrict = restrict
         self.onUpdate = onUpdate
         self.onDelete = onDelete
+    def getName(self):
+        """return an auto-generated name for the constraint if one hasn't 
+        been explictly provided"""
+        pass
 class Index(object):
     def __init__(self, name=None, datatype=None):
         self.name = name
         self.datatype = datatype
         self.column = []
+    def getName(self):
+        """return an auto-generated name for the index if one hasn't been
+        explicitly provided"""
+        pass
 class Column(object):
     def __init__(self, name=None, datatype=None, description=None, 
                  autoIncrement=False, primaryKey=False, unique=False, 
@@ -91,6 +102,4 @@ def test():
     currency.column[lastDate.name] = lastDate
     
     return database
-
-
 

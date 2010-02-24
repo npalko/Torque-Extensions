@@ -5,27 +5,16 @@ Plugin capabilities:
     Export: 
 
 
-physicalModel = grt.root.wb.doc.physicalModels[0]
-database = torque.mysqlwb.adaptor(physicalModel)
+
 
 
 """
 import grt
-import torque.model
 
 from wb import * # import the wb module, must be imported this way for the automatic module setup to work
 
 
 DefineModule(name='PyWbUtils', author='Sun Microsystems Inc.', version='1.0')
-
-
-
-def adaptor(physicalModel):
-    """given a physicalModel from MySQL Workbench, return a 
-    torque.model.database"""
-
-
-
 
 
 
