@@ -1,56 +1,39 @@
+from __future__ import print_function
+
 # Complete description of a relational database, expressed as a collection of
 # objects.
 
 """
-database = model.Database('Symbology')
-
-currency = model.Table('Currency', column=[
-    model.Column('Id', model.INT(), auto=True, unique=True)
-    model.Column('Last.Effective.Date', model.DATE())
-    ])
 
 
-precision: number of digits in a number
-scale: number of digits to the right of a decimal point
 
 * how to deal with sequences?
 * are unique columns another way of specifing an index?
-
+* should we use lists instead of a dict()?
 """
 
 import pickle
-from __future__ import print_function
+
 
 class IndexOrder(object):
     ASC = 0
     DESC = 1
-class Action(object):
+class KeyAction(object):
     CASCADE = 0
     SETNULL = 1
     RESTRICT = 2
     NONE = 3
-
-
-class DECIMAL(object):
-    def __init__(self, precision=18, scale=6):
-        self.precision = precision
-        self.scale = scale
-class NCHAR(object):
-    def __init__(self, length=50):
-        self.length = length
-class NVARCHAR(object):
-    def __init__(self, length=50):
-        self.length = length
-class INT(object):
-    pass
-class BIGINT(object):
-    pass    
-class DATE(object):
-    pass
+class SQLType(object):
+    DECIMAL = 0
+    NCHAR = 1
+    NVARCHAR = 2
+    INT = 3
+    BIGINT = 4
+    DATE = 5  
 
 class ForeignKey(object):
     def __init__(self, name=None, reference=None, restrict=None, 
-                 onUpdate=Action.RESTRICT, onDelete=Action.RESTRICT):
+                 onUpdate=KeyAction.RESTRICT, onDelete=KeyAction.RESTRICT):
         self.name = name
         self.reference = reference
         self.restrict = restrict
@@ -61,27 +44,29 @@ class Index(object):
         self.name = name
         self.datatype = datatype
         self.column = []
-class Sequence(object):
-    def __init__(self):
-        pass
 class Column(object):
-    def __init__(self, name=None, datatype=None, auto=False, 
+    def __init__(self, name=None, datatype=None, description=None, 
+                 autoIncrement=False, primaryKey=False, unique=False, 
                  nullable=False, default=None, ordinal=None):
         self.name = name
-        self.type = type
-        self.autoincrement = autoincrement
+        self.datatype = datatype
+        self.description = description
+        self.autoIncrement = autoIncrement
+        self.primaryKey = primaryKey
+        self.unique = unique
         self.nullable = nullable
         self.default = default
-        self.ordinal = None
+        self.ordinal = ordinal
 class Table(object):
-    def __init__(self, name=None):
+    def __init__(self, name=None, description=None):
         self.name = name
+        self.description = description
         self.column = dict()
         self.foreignKey = dict()
         self.index = dict()
     def getColumn(self):
         """provide an iteration of columns ordered by column.ordinal"""
-        pass
+        return self.column.values()
 class Database(object):
     def __init__(self, name=None):
         self.name = name
@@ -90,15 +75,22 @@ class Database(object):
         """provide an iteration of tables such that the tables with foreign
         key dependencies are listed only after the tables the foreign key
         references"""
-        pass
+        return self.table.values()
         
-def writeToPickle(obj, file=None):
-    if file is None:
-        file = obj.name + '.torque'
-    with open(file, 'w') as f:
-        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)        
-def loadFromPickle(file):
-    with open(file, 'r') as f:
-        obj = pickle.load(f)
-        return obj
+        
+def test():
     
+    database = Database('Symbology')
+    currency = Table('Currency')
+    id = Column('Id', SQLType.INT, autoIncrement=True, unique=True)
+    lastDate = Column('Last.Effective.Date', SQLType.DATE)
+
+
+    database.table[currency.name] = currency
+    currency.column[id.name] = id
+    currency.column[lastDate.name] = lastDate
+    
+    return database
+
+
+
