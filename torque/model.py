@@ -5,11 +5,22 @@ from __future__ import print_function
 
 """
 
+* unique constrants -> translated to an index
+* autoincrement -> only specified as sequence behind the scense
+* ordinal not writtent to xml file - assumed by position
 
 
-* how to deal with sequences?
-* are unique columns another way of specifing an index?
-* should we use lists instead of a dict()?
+<table>
+    col
+    col
+    <index unique="True">
+        <index-column name=""/>
+    </index>
+    <foreign-key name="" table="" column="" localColumn="" onDelete="" onUpdate=""/>
+</table>
+        
+        
+
 """
 
 
@@ -44,7 +55,12 @@ class ForeignKey(object):
         self.onDelete = onDelete
     def getName(self):
         """return an auto-generated name for the constraint if one hasn't 
-        been explictly provided"""
+        been explictly provided
+        
+        FK_[Source Table]_[Source Column]_[Restricted Table]_Restricted_Column
+        
+        
+        """
         pass
 class Index(object):
     def __init__(self, name=None, datatype=None):
@@ -56,32 +72,38 @@ class Index(object):
         explicitly provided"""
         pass
 class Column(object):
-    def __init__(self, name=None, datatype=None, description=None, 
+    def __init__(self, name=None, datatype=None, comment=None, 
                  autoIncrement=False, primaryKey=False, unique=False, 
-                 nullable=False, default=None, ordinal=None):
+                 nullable=False, default=None, defaultIsNull=False):
         self.name = name
         self.datatype = datatype
-        self.description = description
+        self.comment = comment
         self.autoIncrement = autoIncrement
         self.primaryKey = primaryKey
         self.unique = unique
         self.nullable = nullable
-        self.default = default
-        self.ordinal = ordinal
+        self.default = default # None == no default specified
+        self.defaultIsNull = defaultIsNull # true if default is NULL
+    def getIndex(self):
+        """If a column requires an index (in the case of a unique constraint or
+        autoincrement, return an Index object here"""
+        if (self.autoIncrement is not None) or self.unique or self.primaryKey:
+            return Index(datatype='', column=self)
+        
 class Table(object):
-    def __init__(self, name=None, description=None):
+    def __init__(self, name=None, comment=None):
         self.name = name
-        self.description = description
-        self.column = dict()
-        self.foreignKey = dict()
-        self.index = dict()
+        self.comment = comment
+        self.column = []
+        self.foreignKey = []
+        self.index = []
     def getColumn(self):
         """provide an iteration of columns ordered by column.ordinal"""
         return self.column.values()
 class Database(object):
     def __init__(self, name=None):
         self.name = name
-        self.table = dict()
+        self.table = []
     def getTable(self):
         """provide an iteration of tables such that the tables with foreign
         key dependencies are listed only after the tables the foreign key
