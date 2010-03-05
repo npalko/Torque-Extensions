@@ -19,109 +19,131 @@ from __future__ import print_function
     <foreign-key name="" table="" column="" localColumn="" onDelete="" onUpdate=""/>
 </table>
         
-        
+Tables organized as a collection of 
+    columns
+    indexes
+    foreign-key
+
+
+
+Need to fix foreign key automatic name        
 
 """
 
-
-class IndexOrder(object):
-    ASC = 0
-    DESC = 1
 class KeyAction(object):
     CASCADE = 0
     SETNULL = 1
     RESTRICT = 2
     NONE = 3
+    
 class SQLType(object):
-    DECIMAL = 0	# don't support NUMERIC, it's redundant
-    CHAR = 1
-    VARCHAR = 2
-    NCHAR = 3
-    NVARCHAR = 4
-    INT = 5
-    BIGINT = 6
-    DATE = 7
-    DATETIME = 8
-    TIMESTAMP = 9
-    BIT = 10
-
+    TINYINT = 0       # 0 to 255
+    SMALLINT = 1      # -2^15 to 2^15-1 
+    INT = 2           # -2^31 to 2^31-1 
+    BIGINT = 3        # -2^63 to 2^63-1 
+    DECIMAL = 4       # we don't use NUMERIC
+    BIT = 5           # 0,1,NULL
+    SINGLE = 6        # REAL, FLOAT(1-24)
+    DOUBLE = 7        # 
+    TIME = 8
+    DATE = 9
+    TIMESTAMP = 10
+    CHAR = 11
+    VARCHAR = 12
+    BINARY = 13
+    
 class ForeignKey(object):
-    def __init__(self, name=None, reference=None, restrict=None, 
-                 onUpdate=KeyAction.RESTRICT, onDelete=KeyAction.RESTRICT):	
+    def __init__(self, name=None, referencedColumn=None, 
+                 restrictedColumn=None, onUpdate=KeyAction.RESTRICT, 
+                 onDelete=KeyAction.RESTRICT):	
+        """RestrictedColumn is the column that has its allowed values 
+        restricted by the foreign key contstraint; the ReferencedColumn is
+        the column providing the constraint"""
+        
         self.name = name
-        self.reference = reference
-        self.restrict = restrict
+        self.referencedColumn = referencedColumn
+        self.restrictedColumn = restrictedColumn
         self.onUpdate = onUpdate
         self.onDelete = onDelete
-    def getName(self):
-        """return an auto-generated name for the constraint if one hasn't 
-        been explictly provided
-        
-        FK_[Source Table]_[Source Column]_[Restricted Table]_Restricted_Column
-        
-        
-        """
-        pass
+    def getAutomaticName(self):
+        """return an auto-generated name for the constraint"""
+        return self.name
+    
 class Index(object):
-    def __init__(self, name=None, datatype=None):
+    def __init__(self, name=None, unique=True, ascendingOrder=True,
+                 description=None):
         self.name = name
-        self.datatype = datatype
+        self.unique = unique
+        self.ascendingOrder = ascendingOrder
         self.column = []
-    def getName(self):
-        """return an auto-generated name for the index if one hasn't been
-        explicitly provided"""
-        pass
+        self.description = description
+    def getAutomaticName(self):
+        """return an auto-generated name for the index"""
+        return self.name
+    
 class Column(object):
-    def __init__(self, name=None, datatype=None, comment=None, 
+    def __init__(self, name=None, datatype=None, description=None, 
                  autoIncrement=False, primaryKey=False, unique=False, 
-                 nullable=False, default=None, defaultIsNull=False):
+                 nullable=False, default=None, defaultIsNull=False,
+                 length=None, precision=None, scale=None, parentTable=None):
         self.name = name
         self.datatype = datatype
-        self.comment = comment
+        self.description = description
         self.autoIncrement = autoIncrement
         self.primaryKey = primaryKey
         self.unique = unique
         self.nullable = nullable
         self.default = default # None == no default specified
         self.defaultIsNull = defaultIsNull # true if default is NULL
-    def getIndex(self):
-        """If a column requires an index (in the case of a unique constraint or
-        autoincrement, return an Index object here"""
-        if (self.autoIncrement is not None) or self.unique or self.primaryKey:
-            return Index(datatype='', column=self)
+        self.length = length
+        self.precision = precision
+        self.scale = scale
+        self.parentTable = parentTable
+    def getIndex(self, unique=True, primaryKey=True):
+        """Return an index if requred by the column properties"""
+        if (unique and self.unique) or (primaryKey and self.primaryKey):
+            index = Index()
+            index.column.append(self)
+            return index
+        
+class IndexColumn(Column):
+    pass
         
 class Table(object):
-    def __init__(self, name=None, comment=None):
+    def __init__(self, name=None, description=None):
         self.name = name
-        self.comment = comment
+        self.description = description
         self.column = []
         self.foreignKey = []
         self.index = []
-    def getColumn(self):
-        """provide an iteration of columns ordered by column.ordinal"""
-        return self.column.values()
+    def appendColumn(self, column):
+        column.parentTable = self
+        self.column.append(column)
+        
 class Database(object):
-    def __init__(self, name=None):
+    def __init__(self, name=None, description=None):
         self.name = name
+        self.description = description
         self.table = []
-    def getTable(self):
+    def getTableDependencyIteration(self):
         """provide an iteration of tables such that the tables with foreign
         key dependencies are listed only after the tables the foreign key
         references"""
-        return self.table.values()
+        return (t for t in self.table)
         
         
 def test():
     
     database = Database('Symbology')
+    
     currency = Table('Currency')
-    id = Column('Id', SQLType.INT, autoIncrement=True, unique=True)
+    id = Column('Id', SQLType.INT, autoIncrement=True, primaryKey=True)
     lastDate = Column('Last.Effective.Date', SQLType.DATE)
 
-
-    database.table[currency.name] = currency
-    currency.column[id.name] = id
-    currency.column[lastDate.name] = lastDate
+    currency.appendColumn(id)
+    currency.appendColumn(lastDate)
+    database.table.append(currency)
+    
     
     return database
 
