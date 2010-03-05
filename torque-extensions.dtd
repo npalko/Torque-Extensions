@@ -7,7 +7,7 @@
   name CDATA #REQUIRED
 >
 
-<!ELEMENT table (column+, foreign-key*, index*)>
+<!ELEMENT table (column+, index*, foreign-key*)>
 <!ATTLIST table
   name CDATA #REQUIRED
   interfaceName CDATA #IMPLIED
