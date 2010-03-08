@@ -5,6 +5,7 @@
 <!ELEMENT database (table+)>
 <!ATTLIST database
   name CDATA #REQUIRED
+  interfaceName CDATA #IMPLIED
 >
 
 <!ELEMENT table (column+, index*, foreign-key*)>
@@ -20,11 +21,12 @@
   interfaceName CDATA #IMPLIED
   type (TINYINT|SMALLINT|INT|BIGINT|DECIMAL|SINGLE|DOUBLE|TIME|DATE|TIMESTAMP
         |CHAR|VARCHAR|BIT|BINARY) #REQUIRED
-  primaryKey (TRUE|FALSE)  #IMPLIED
-  nullable (TRUE|FALSE)  #IMPLIED
+  interfaceType (single|double|decimal|int16|int32|int64|string|date) #IMPLIED
+  primaryKey (True|False)  #IMPLIED
+  nullable (True|False)  #IMPLIED
   default CDATA #IMPLIED
-  defaultIsNull (TRUE|FALSE) #IMPLIED
-  autoIncrement (TRUE|FALSE) #IMPLIED
+  defaultIsNull (True|False) #IMPLIED
+  autoIncrement (True|False) #IMPLIED
   length CDATA #IMPLIED
   precision CDATA #IMPLIED
   scale CDATA #IMPLIED
@@ -37,16 +39,16 @@
   referencedTable CDATA #REQUIRED
   referencedColumn CDATA #REQUIRED
   restrictedColumn CDATA #REQUIRED
-  onUpdate (CASCADE|SETNULL|RESTRICT|NONE) #REQUIRED
-  onDelete (CASCADE|SETNULL|RESTRICT|NONE) #REQUIRED
+  onUpdate (Cascade|SetNull|Restrict|None) #REQUIRED
+  onDelete (Cascade|SetNull|Restrict|None) #REQUIRED
 >
 
 <!ELEMENT index (index-column+)>
 <!ATTLIST index
   name CDATA #IMPLIED
   description CDATA #IMPLIED
-  unique (TRUE|FALSE) #REQUIRED
-  ascendingOrder (TRUE|FALSE) #IMPLIED
+  unique (True|False) #REQUIRED
+  ascendingOrder (True|False) #IMPLIED
 >
 
 <!ELEMENT index-column EMPTY>
