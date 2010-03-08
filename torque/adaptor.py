@@ -3,13 +3,10 @@ from __future__ import print_function
 import cPickle as pickle
 import torque.model
 
+from lxml import etree
 from torque.model import SQLType, KeyAction
 
-try:
-    from lxml import etree
-except ImportError:
-    print('Couldn\'t load lxml. XML IO not available.')
-    
+
 try:
     import sqlalchemy
 except ImportError:
@@ -26,7 +23,7 @@ TODO:
 	
 class MySQLWorkbench(object):
     def __init__(self):
-        """ """
+        """initialize bi-directional mapping"""
         
         types = [
             (SQLType.TINYINT, 'TINYINT'),
@@ -62,10 +59,10 @@ class MySQLWorkbench(object):
         """
         pass
     def toModel(self, schemata):
-        """Usage:
-
-        schemata = grt.root.wb.doc.physicalModels[0].catalog.schemata[0]
-        database = torque.mysqlwb.adaptor(physicalModel)"""
+        """return a model.Database representing the database design detailed
+        in the MySQL Designer catalog.
+        
+        schemata = grt.root.wb.doc.physicalModels[0].catalog.schemata[0]"""
         
         dModel = torque.model.Database(name=schemata.name)
         
@@ -142,13 +139,6 @@ class XML(object):
         """create bi-directional mapping between torque.model and text labels
         used in the XML file"""
                 
-        elements = [
-            (torque.model.Database, 'database'),
-            (torque.model.Column, 'column'),
-            (torque.model.ForeignKey, 'foreign-key'),
-            (torque.model.Index, 'index'),
-            (torque.model.IndexColumn, 'index-column'),
-            (torque.model.Table, 'table')]
         types = [
             (SQLType.TINYINT, 'TINYINT'),
             (SQLType.SMALLINT, 'SMALLINT'),
@@ -181,38 +171,47 @@ class XML(object):
         self._TextToActionMap = dict((b,a) for (a,b) in actions)
         self._BoolToTextMap = dict((a,b) for (a,b) in bools)
         self._TextToBoolMap = dict((b,a) for (a,b) in bools)
-        self._ElementToTextMap = dict((a,b) for (a,b) in elements)
-        self._TextToElementMap = dict((b,a) for (a,b) in elements)
 
         self.dtd = dtd
         self.extension = 'xml'
                  
-    def load(self, file):
+    def load(self, file, validate=True):
         with open(file, 'r') as f:
-            xmlDatabase = etree.parse(f)
-    
-        return xmlDatabase
+            tree = etree.parse(f)
+        
+        # get database node
+        # iterate over tables
+        #   since we're written in a dependency order we can create FK 
+        #   on the fly here
+        
+        
+        
+        
+        xmlDatabase = tree.getroot()
+        a = xmlDatabase.attrib
+        database = torque.model.Database(a['name'])
+        database.description = a['description'] if 'description' in a.keys() else None
+
+        
+        
+        
+        
+        
+        return database
     def write(self, database, file=None, useAutoNames=True):
         """write model.database to a Torque Database Schema XML file"""
-    
-        databaseLabel = self._ElementToTextMap[torque.model.Database]
-        tableLabel = self._ElementToTextMap[torque.model.Table]
-        columnLabel = self._ElementToTextMap[torque.model.Column]
-        indexLabel = self._ElementToTextMap[torque.model.Index]
-        indexColumnLabel = self._ElementToTextMap[torque.model.IndexColumn]
-        foreignKeyLabel = self._ElementToTextMap[torque.model.ForeignKey]
         
-        xmlDatabase = etree.Element(databaseLabel, name=database.name)
+        xmlDatabase = etree.Element('database', name=database.name)
         
         for table in database.getTableDependencyIteration():
-            xmlTable = etree.SubElement(xmlDatabase, tableLabel)
+            xmlTable = etree.SubElement(xmlDatabase, 'table')
             a = xmlTable.attrib
             a['name'] = table.name
             if table.description is not None:
                 a['description'] = table.description
                 
             for column in table.column:
-                xmlColumn = etree.SubElement(xmlTable, columnLabel)
+                xmlColumn = etree.SubElement(xmlTable, 'column')
                 a = xmlColumn.attrib
                 a['name'] = column.name
                 a['type'] = self._TypeToTextMap[column.datatype]
@@ -238,7 +237,7 @@ class XML(object):
                     a['defaultIsNull'] = self._BoolToTextMap[column.defaultIsNull]
 
             for index in table.index:
-                xmlIndex = etree.SubElement(xmlTable, indexLabel)
+                xmlIndex = etree.SubElement(xmlTable, 'index')
                 a = xmlIndex.attrib
                 if useAutoNames:
                     a['name'] = index.getAutomaticName()
@@ -250,12 +249,12 @@ class XML(object):
                 a['ascendingOrder'] = self._BoolToTextMap[index.ascendingOrder]
                 
                 for indexColumn in index.column:
-                    xmlIndexColumn = etree.SubElement(xmlIndex, indexColumnLabel)
+                    xmlIndexColumn = etree.SubElement(xmlIndex, 'index-column')
                     a = xmlIndexColumn.attrib
                     a['name'] = indexColumn.name
 
             for foreignKey in table.foreignKey:
-                xmlForeignKey = etree.SubElement(xmlTable, foreignKeyLabel)
+                xmlForeignKey = etree.SubElement(xmlTable, 'foreign-key')
                 a = xmlForeignKey.attrib
                 if useAutoNames:
                     a['name'] = foreignKey.getAutomaticName()
