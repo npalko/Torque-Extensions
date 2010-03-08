@@ -9,15 +9,6 @@ from __future__ import print_function
 * autoincrement -> only specified as sequence behind the scense
 * ordinal not writtent to xml file - assumed by position
 
-
-<table>
-    col
-    col
-    <index unique="True">
-        <index-column name=""/>
-    </index>
-    <foreign-key name="" table="" column="" localColumn="" onDelete="" onUpdate=""/>
-</table>
         
 Tables organized as a collection of 
     columns
@@ -99,15 +90,6 @@ class Column(object):
         self.precision = precision
         self.scale = scale
         self.parentTable = parentTable
-    def getIndex(self, unique=True, primaryKey=True):
-        """Return an index if requred by the column properties"""
-        if (unique and self.unique) or (primaryKey and self.primaryKey):
-            index = Index()
-            index.column.append(self)
-            return index
-        
-class IndexColumn(Column):
-    pass
         
 class Table(object):
     def __init__(self, name=None, description=None):
@@ -117,6 +99,7 @@ class Table(object):
         self.foreignKey = []
         self.index = []
     def appendColumn(self, column):
+        """embed a reference to the parent table for each column appended"""
         column.parentTable = self
         self.column.append(column)
         
@@ -129,6 +112,12 @@ class Database(object):
         """provide an iteration of tables such that the tables with foreign
         key dependencies are listed only after the tables the foreign key
         references"""
+        
+        # sort [] by @name
+        # for t in table
+        #   for t in table.foreignKey.referencedColumn.parentTable
+        
+        
         return (t for t in self.table)
         
         
