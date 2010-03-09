@@ -1,25 +1,11 @@
 from __future__ import print_function
 
+import hashlib
+
 # Complete description of a relational database, expressed as a collection of
 # objects.
 
-"""
 
-* unique constrants -> translated to an index
-* autoincrement -> only specified as sequence behind the scense
-* ordinal not writtent to xml file - assumed by position
-
-        
-Tables organized as a collection of 
-    columns
-    indexes
-    foreign-key
-
-
-
-Need to fix foreign key automatic name        
-
-"""
 
 class KeyAction(object):
     CASCADE = 0
@@ -58,26 +44,44 @@ class ForeignKey(object):
         self.onDelete = onDelete
     def getAutomaticName(self):
         """return an auto-generated name for the constraint"""
-        return self.name
-    
+        return 'FK_(%s)%s_(%s)%s' % (self.restrictedColumn.parentTable.name,
+            self.restrictedColumn.name,
+            self.referencedColumn.parentTable.name,
+            self.referencedColumn.name)
+
 class Index(object):
     def __init__(self, name=None, unique=True, ascendingOrder=True,
                  description=None):
         self.name = name
         self.unique = unique
         self.ascendingOrder = ascendingOrder
-        self.column = []
         self.description = description
+        self.column = []
+    def isPrimary(self):
+        """return true if it this is the primary key index"""
+        return (len(self.column) == 1) and (self.column[0].primaryKey)
     def getAutomaticName(self):
         """return an auto-generated name for the index"""
-        return self.name
-    
+        if self.isPrimary():
+            name = '(%s)' % self.column[0].parentTable.name
+        else:
+            m = hashlib.sha1()
+            m.update(str(self.unique))
+            m.update(str(self.ascendingOrder))
+            m.update(str(self.description))
+            for c in self.column:
+                m.update(c.parentTable.name + c.name)
+            name = m.hexdigest()[:16]
+        return 'IDX_%s' % name
+        
 class Column(object):
-    def __init__(self, name=None, datatype=None, description=None, 
-                 autoIncrement=False, primaryKey=False, unique=False, 
-                 nullable=False, default=None, defaultIsNull=False,
-                 length=None, precision=None, scale=None, parentTable=None):
+    def __init__(self, name=None, interfaceName=None, datatype=None, 
+                 description=None, autoIncrement=False, primaryKey=False, 
+                 unique=False, nullable=False, default=None, 
+                 defaultIsNull=False, length=None, precision=None, 
+                 scale=None, parentTable=None):
         self.name = name
+        self.interfaceName = interfaceName
         self.datatype = datatype
         self.description = description
         self.autoIncrement = autoIncrement
@@ -92,8 +96,9 @@ class Column(object):
         self.parentTable = parentTable
         
 class Table(object):
-    def __init__(self, name=None, description=None):
+    def __init__(self, name=None, interfaceName=None, description=None):
         self.name = name
+        self.interfaceName = interfaceName
         self.description = description
         self.column = []
         self.foreignKey = []
@@ -104,14 +109,30 @@ class Table(object):
         self.column.append(column)
         
 class Database(object):
-    def __init__(self, name=None, description=None):
+    def __init__(self, name=None, interfaceName=None, description=None):
         self.name = name
+        self.interfaceName = interfaceName
         self.description = description
         self.table = []
     def getTableDependencyIteration(self):
         """provide an iteration of tables such that the tables with foreign
         key dependencies are listed only after the tables the foreign key
         references"""
+        
+        """
+        for (i,table) in self.table:
+            
+            for fk in table.foreignKey:
+                parentTable = fk.referencedColumn.parentTable
+                
+                if parentTable not in self.table[:i]:
+                    # problem: dependent not listed before
+                    
+                    
+                
+        """
+            
+            
         
         # sort [] by @name
         # for t in table
