@@ -1,0 +1,441 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE database SYSTEM "http://github.com/npalko/Torque-Extensions/raw/master/torque-extensions.dtd">
+<database name="Symbology">
+  <table name="Currency">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Last.Effective.Date" type="DATE" nullable="TRUE"/>
+    <column name="ISO.Code" type="CHAR" description="ISO 4217 code" length="3"/>
+    <column name="ISO.Number" type="INT" description="ISO 4217 number"/>
+    <column name="Name" type="VARCHAR" length="100"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+  </table>
+  <table name="Country">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Last.Effective.Date" type="DATE" nullable="TRUE"/>
+    <column name="ISO.Code" type="CHAR" description="ISO 3166-1 alpha-3 " length="3"/>
+    <column name="ISO.Number" type="INT" description="ISO 3166-1 numeric "/>
+    <column name="Name" type="VARCHAR" length="100"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+  </table>
+  <table name="Company">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Last.Effective.Date" type="DATE" description="in the event of a name change, this column is populated with the date the name was last effective" nullable="TRUE"/>
+    <column name="Previous.Company.Id" type="INT" nullable="TRUE"/>
+    <column name="Name" type="VARCHAR" description="Full name of the company" length="100"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <index name="fk_Company_Company1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Previous.Company.Id"/>
+    </index>
+    <foreign-key name="fk_Company_Company1" referencedTable="Company" referencedColumn="Id" restrictedColumn="Previous.Company.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+  </table>
+  <table name="Security">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Underlying.Security.Id" type="INT" nullable="TRUE"/>
+    <column name="Company.Id" type="INT"/>
+    <column name="Instrument.Id" type="INT"/>
+    <column name="Currency.Id" type="INT"/>
+    <column name="Strike" type="DECIMAL" description="strike price for securities with optionality" precision="18" scale="6" nullable="TRUE"/>
+    <column name="Expiration.Date" type="DATE" nullable="TRUE"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <index name="fk_Security_Security1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Underlying.Security.Id"/>
+    </index>
+    <index name="fk_Security_Company1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Company.Id"/>
+    </index>
+    <index name="fk_Security_Instrument1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Instrument.Id"/>
+    </index>
+    <index name="fk_Security_Currency1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Currency.Id"/>
+    </index>
+    <foreign-key name="fk_Security_Security1" referencedTable="Security" referencedColumn="Id" restrictedColumn="Underlying.Security.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+    <foreign-key name="fk_Security_Company1" referencedTable="Company" referencedColumn="Id" restrictedColumn="Company.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+    <foreign-key name="fk_Security_Instrument1" referencedTable="Instrument" referencedColumn="Id" restrictedColumn="Instrument.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+    <foreign-key name="fk_Security_Currency1" referencedTable="Currency" referencedColumn="Id" restrictedColumn="Currency.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+  </table>
+  <table name="Instrument">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Parent.Instrument.Id" type="INT" nullable="TRUE"/>
+    <column name="Name" type="VARCHAR" length="100"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <index name="instrument-1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <foreign-key name="instrument-1" referencedTable="Instrument" referencedColumn="Parent.Instrument.Id" restrictedColumn="Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+  </table>
+  <table name="Industry.Classification.System">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Name" type="VARCHAR" length="100"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+  </table>
+  <table name="Industry.Level">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Last.Effective.Date" type="DATE" nullable="TRUE"/>
+    <column name="Industry.Classification.System.Id" type="INT"/>
+    <column name="Code" type="VARCHAR" length="100"/>
+    <column name="Name" type="VARCHAR" length="100"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <index name="fk_Industry.Level_Industry.Classification.System1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Industry.Classification.System.Id"/>
+    </index>
+    <foreign-key name="fk_Industry.Level_Industry.Classification.System1" referencedTable="Industry.Classification.System" referencedColumn="Id" restrictedColumn="Industry.Classification.System.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+  </table>
+  <table name="Industry">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Last.Effective.Date" type="DATE" nullable="TRUE"/>
+    <column name="Parent.Industry.Id" type="INT" nullable="TRUE"/>
+    <column name="Industry.Classification.System.Id" type="INT"/>
+    <column name="Industry.Level.Id" type="INT"/>
+    <column name="Code" type="VARCHAR" length="100"/>
+    <column name="Name" type="VARCHAR" length="100"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <index name="fk_Industry_Industry.Classification.System1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Industry.Classification.System.Id"/>
+    </index>
+    <index name="fk_Industry_Industry.Level1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Industry.Level.Id"/>
+    </index>
+    <index name="fk_Industry_Industry1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Parent.Industry.Id"/>
+    </index>
+    <foreign-key name="fk_Industry_Industry.Classification.System1" referencedTable="Industry.Classification.System" referencedColumn="Id" restrictedColumn="Industry.Classification.System.Id" onUpdate="NONE" onDelete="NONE"/>
+    <foreign-key name="fk_Industry_Industry.Level1" referencedTable="Industry.Level" referencedColumn="Id" restrictedColumn="Industry.Level.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+    <foreign-key name="fk_Industry_Industry1" referencedTable="Industry" referencedColumn="Id" restrictedColumn="Parent.Industry.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+  </table>
+  <table name="Counter.Party">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Exchange.Id" type="INT" nullable="TRUE"/>
+    <column name="Synthetic.Exchange.Id" type="INT" nullable="TRUE"/>
+    <column name="Broker.Id" type="INT" nullable="TRUE"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <index name="fk_Counter.Party_Broker1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Broker.Id"/>
+    </index>
+    <index name="fk_Counter.Party_Exchange1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Exchange.Id"/>
+    </index>
+    <index name="fk_Counter.Party_Synthetic.Exchange1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Synthetic.Exchange.Id"/>
+    </index>
+    <foreign-key name="fk_Counter.Party_Broker1" referencedTable="Broker" referencedColumn="Id" restrictedColumn="Broker.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+    <foreign-key name="fk_Counter.Party_Exchange1" referencedTable="Exchange" referencedColumn="Id" restrictedColumn="Exchange.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+    <foreign-key name="fk_Counter.Party_Synthetic.Exchange1" referencedTable="Synthetic.Exchange" referencedColumn="Id" restrictedColumn="Synthetic.Exchange.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+  </table>
+  <table name="Exchange">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Last.Effective.Date" type="DATE" nullable="TRUE"/>
+    <column name="Sequence" type="INT"/>
+    <column name="Country.Id" type="INT"/>
+    <column name="ISO.Code" type="CHAR" description="ISO 10383 Market Identifier Code (MIC)" length="4"/>
+    <column name="Name" type="VARCHAR" length="100"/>
+    <column name="Website" type="VARCHAR" length="100" nullable="TRUE"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <index name="fk_Exchange_Country1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Country.Id"/>
+    </index>
+    <foreign-key name="fk_Exchange_Country1" referencedTable="Country" referencedColumn="Id" restrictedColumn="Country.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+  </table>
+  <table name="Synthetic.Exchange">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Name" type="VARCHAR" length="100"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+  </table>
+  <table name="Broker">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Name" type="VARCHAR" length="100"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+  </table>
+  <table name="Price">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Sequence" type="INT" description="1 = first price introduced to the system, subsequent revisions increment in sequence"/>
+    <column name="Insert.Stamp" type="TIMESTAMP"/>
+    <column name="Security.Id" type="INT"/>
+    <column name="Counter.Party.Id" type="INT"/>
+    <column name="Effective.Date" type="DATE"/>
+    <column name="Currency.Id" type="INT"/>
+    <column name="Open" type="DECIMAL" precision="18" scale="6" nullable="TRUE"/>
+    <column name="Close" type="DECIMAL" precision="18" scale="6" nullable="TRUE"/>
+    <column name="High" type="DECIMAL" precision="18" scale="6" nullable="TRUE"/>
+    <column name="Low" type="DECIMAL" precision="18" scale="6" nullable="TRUE"/>
+    <column name="Volume" type="DECIMAL" precision="18" scale="1" nullable="TRUE"/>
+    <column name="Open.Interest" type="DECIMAL" precision="18" scale="6" nullable="TRUE"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <index name="fk_Price_Counter.Party1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Counter.Party.Id"/>
+    </index>
+    <index name="fk_Price_Security1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Security.Id"/>
+    </index>
+    <index name="fk_Price_Currency1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Currency.Id"/>
+    </index>
+    <index name="uqset" unique="TRUE" ascendingOrder="TRUE">
+      <index-column name="Security.Id"/>
+      <index-column name="Counter.Party.Id"/>
+      <index-column name="Effective.Date"/>
+      <index-column name="Sequence"/>
+    </index>
+    <foreign-key name="fk_Price_Counter.Party1" referencedTable="Counter.Party" referencedColumn="Id" restrictedColumn="Counter.Party.Id" onUpdate="NONE" onDelete="NONE"/>
+    <foreign-key name="fk_Price_Security1" referencedTable="Security" referencedColumn="Id" restrictedColumn="Security.Id" onUpdate="NONE" onDelete="NONE"/>
+    <foreign-key name="fk_Price_Currency1" referencedTable="Currency" referencedColumn="Id" restrictedColumn="Currency.Id" onUpdate="NONE" onDelete="NONE"/>
+  </table>
+  <table name="Company.Industry">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Last.Effective.Date" type="DATE" nullable="TRUE"/>
+    <column name="Company.Id" type="INT"/>
+    <column name="Industry.Id" type="INT"/>
+    <column name="Industry.Classification.System.Id" type="INT"/>
+    <column name="Industry.Level.Id" type="INT"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <index name="fk_Company.Industry_Company1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Company.Id"/>
+    </index>
+    <index name="fk_Company.Industry_Industry.Classification.System1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Industry.Classification.System.Id"/>
+    </index>
+    <index name="fk_Company.Industry_Industry1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Industry.Id"/>
+    </index>
+    <index name="fk_Company.Industry_Industry.Level1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Industry.Level.Id"/>
+    </index>
+    <foreign-key name="fk_Company.Industry_Company1" referencedTable="Company" referencedColumn="Id" restrictedColumn="Company.Id" onUpdate="NONE" onDelete="NONE"/>
+    <foreign-key name="fk_Company.Industry_Industry.Classification.System1" referencedTable="Industry.Classification.System" referencedColumn="Id" restrictedColumn="Industry.Classification.System.Id" onUpdate="NONE" onDelete="NONE"/>
+    <foreign-key name="fk_Company.Industry_Industry1" referencedTable="Industry" referencedColumn="Id" restrictedColumn="Industry.Id" onUpdate="NONE" onDelete="NONE"/>
+    <foreign-key name="fk_Company.Industry_Industry.Level1" referencedTable="Industry.Level" referencedColumn="Id" restrictedColumn="Industry.Level.Id" onUpdate="NONE" onDelete="NONE"/>
+  </table>
+  <table name="Exchange.Rate">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="To.Currency.Id" type="INT"/>
+    <column name="From.Currecny.Id" type="INT"/>
+    <column name="Effective.Date" type="DATE"/>
+    <column name="Mark.Id" type="INT"/>
+    <column name="Rate" type="DECIMAL" precision="18" scale="10"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <index name="fk_Exchange.Rate_Currency1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="From.Currecny.Id"/>
+    </index>
+    <index name="fk_Exchange.Rate_Currency2" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="To.Currency.Id"/>
+    </index>
+    <index name="fk_Exchange.Rate_Mark1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Mark.Id"/>
+    </index>
+    <foreign-key name="fk_Exchange.Rate_Currency1" referencedTable="Currency" referencedColumn="Id" restrictedColumn="From.Currecny.Id" onUpdate="NONE" onDelete="NONE"/>
+    <foreign-key name="fk_Exchange.Rate_Currency2" referencedTable="Currency" referencedColumn="Id" restrictedColumn="To.Currency.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+    <foreign-key name="fk_Exchange.Rate_Mark1" referencedTable="Mark" referencedColumn="Id" restrictedColumn="Mark.Id" onUpdate="NONE" onDelete="NONE"/>
+  </table>
+  <table name="Mark">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Time" type="TIME"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+  </table>
+  <table name="Event.Type">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Parent.Event.Type.Id" type="INT" nullable="TRUE"/>
+    <column name="Name" type="VARCHAR" length="100" nullable="TRUE"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <index name="fk_Event.Type_Event.Type1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Parent.Event.Type.Id"/>
+    </index>
+    <foreign-key name="fk_Event.Type_Event.Type1" referencedTable="Event.Type" referencedColumn="Id" restrictedColumn="Parent.Event.Type.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+  </table>
+  <table name="Event">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Last.Effective.Date" type="DATE" nullable="TRUE"/>
+    <column name="Sequence" type="INT"/>
+    <column name="Parent.Event.Id" type="INT"/>
+    <column name="Event.Type.Id" type="INT"/>
+    <column name="Company.Id" type="INT"/>
+    <column name="Effective.Date" type="DATE"/>
+    <column name="Security.Id" type="INT" nullable="TRUE"/>
+    <column name="Disbursed.Security.Id" type="INT" nullable="TRUE"/>
+    <column name="Currency.Id" type="INT" nullable="TRUE"/>
+    <column name="Declaration.Date" type="DATE" description="date the event is declared" nullable="TRUE"/>
+    <column name="Ex.Dividend.Data" type="DATE" description="day on which all shares bought and sold no longer come attached with the right to be paid the most recently declared dividend." nullable="TRUE"/>
+    <column name="Cash" type="DECIMAL" precision="18" scale="6" nullable="TRUE"/>
+    <column name="Shares" type="DECIMAL" description="sharesOutstanding (unsplit)" precision="18" scale="1" nullable="TRUE"/>
+    <column name="Split.Factor" type="DOUBLE" nullable="TRUE"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <index name="fk_Event_Event.Type1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Event.Type.Id"/>
+    </index>
+    <index name="fk_Event_Security1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Disbursed.Security.Id"/>
+    </index>
+    <index name="fk_Event_Company1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Company.Id"/>
+    </index>
+    <index name="fk_Event_Currency1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Currency.Id"/>
+    </index>
+    <index name="fk_Event_Event1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Parent.Event.Id"/>
+    </index>
+    <index name="fk_Event_Security2" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Security.Id"/>
+    </index>
+    <foreign-key name="fk_Event_Event.Type1" referencedTable="Event.Type" referencedColumn="Id" restrictedColumn="Event.Type.Id" onUpdate="NONE" onDelete="NONE"/>
+    <foreign-key name="fk_Event_Security1" referencedTable="Security" referencedColumn="Id" restrictedColumn="Disbursed.Security.Id" onUpdate="NONE" onDelete="NONE"/>
+    <foreign-key name="fk_Event_Company1" referencedTable="Company" referencedColumn="Id" restrictedColumn="Company.Id" onUpdate="NONE" onDelete="NONE"/>
+    <foreign-key name="fk_Event_Currency1" referencedTable="Currency" referencedColumn="Id" restrictedColumn="Currency.Id" onUpdate="NONE" onDelete="NONE"/>
+    <foreign-key name="fk_Event_Event1" referencedTable="Event" referencedColumn="Id" restrictedColumn="Parent.Event.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+    <foreign-key name="fk_Event_Security2" referencedTable="Security" referencedColumn="Id" restrictedColumn="Security.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+  </table>
+  <table name="Symbol">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Last.Effective.Date" type="DATE" nullable="TRUE"/>
+    <column name="Sequence" type="INT"/>
+    <column name="Security.Id" type="INT"/>
+    <column name="Counter.Party.Id" type="INT"/>
+    <column name="CUSIP" type="CHAR" length="10" nullable="TRUE"/>
+    <column name="ISIN" type="CHAR" length="12" nullable="TRUE"/>
+    <column name="SEDOL" type="CHAR" length="7" nullable="TRUE"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <index name="fk_Symbol_Security1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Security.Id"/>
+    </index>
+    <index name="fk_Symbol_Counter.Party1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Counter.Party.Id"/>
+    </index>
+    <index name="symbol-uq" unique="TRUE" ascendingOrder="TRUE">
+      <index-column name="Sequence"/>
+      <index-column name="Security.Id"/>
+      <index-column name="Counter.Party.Id"/>
+    </index>
+    <foreign-key name="fk_Symbol_Security1" referencedTable="Security" referencedColumn="Id" restrictedColumn="Security.Id" onUpdate="NONE" onDelete="NONE"/>
+    <foreign-key name="fk_Symbol_Counter.Party1" referencedTable="Counter.Party" referencedColumn="Id" restrictedColumn="Counter.Party.Id" onUpdate="NONE" onDelete="NONE"/>
+  </table>
+  <table name="Vendor.Symbol">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Last.Effective.Date" type="DATE" nullable="TRUE"/>
+    <column name="Sequence" type="INT"/>
+    <column name="Counter.Party.Id" type="INT"/>
+    <column name="Security.Id" type="INT"/>
+    <column name="Vendor.Id" type="INT"/>
+    <column name="Vendor.Symbol.Type.Id" type="INT"/>
+    <column name="Symbol" type="VARCHAR" length="45" nullable="TRUE"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <index name="fk_Vendor.Symbol_Vendor.Symbol.Type1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Vendor.Symbol.Type.Id"/>
+    </index>
+    <index name="fk_Vendor.Symbol_Security1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Security.Id"/>
+    </index>
+    <index name="fk_Vendor.Symbol_Vendor1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Vendor.Id"/>
+    </index>
+    <index name="fk_Vendor.Symbol_Counter.Party1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Counter.Party.Id"/>
+    </index>
+    <foreign-key name="fk_Vendor.Symbol_Vendor.Symbol.Type1" referencedTable="Vendor.Symbol.Type" referencedColumn="Id" restrictedColumn="Vendor.Symbol.Type.Id" onUpdate="NONE" onDelete="NONE"/>
+    <foreign-key name="fk_Vendor.Symbol_Security1" referencedTable="Security" referencedColumn="Id" restrictedColumn="Security.Id" onUpdate="NONE" onDelete="NONE"/>
+    <foreign-key name="fk_Vendor.Symbol_Vendor1" referencedTable="Vendor" referencedColumn="Id" restrictedColumn="Vendor.Id" onUpdate="NONE" onDelete="NONE"/>
+    <foreign-key name="fk_Vendor.Symbol_Counter.Party1" referencedTable="Counter.Party" referencedColumn="Id" restrictedColumn="Counter.Party.Id" onUpdate="NONE" onDelete="NONE"/>
+  </table>
+  <table name="Intraday.Price">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Security.Id" type="VARCHAR" length="45" nullable="TRUE"/>
+    <column name="Counter.Party.Id" type="VARCHAR" length="45" nullable="TRUE"/>
+    <column name="Effective.Date" type="VARCHAR" length="45" nullable="TRUE"/>
+    <column name="Mark.Id" type="VARCHAR" length="45" nullable="TRUE"/>
+    <column name="Bid" type="VARCHAR" length="45" nullable="TRUE"/>
+    <column name="Offer" type="VARCHAR" length="45" nullable="TRUE"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+  </table>
+  <table name="Vendor">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Name" type="VARCHAR" length="100"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+  </table>
+  <table name="Vendor.Symbol.Type">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Name" type="VARCHAR" length="100"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+  </table>
+  <table name="Vendor.Exchange">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Last.Effective.Date" type="DATE" nullable="TRUE"/>
+    <column name="Sequence" type="INT"/>
+    <column name="Exchange.Id" type="INT"/>
+    <column name="Vendor.Id" type="INT"/>
+    <column name="Symbol" type="VARCHAR" length="45"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <index name="fk_Vendor.Exchange_Vendor1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Vendor.Id"/>
+    </index>
+    <index name="fk_Vendor.Exchange_Exchange1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Exchange.Id"/>
+    </index>
+    <foreign-key name="fk_Vendor.Exchange_Vendor1" referencedTable="Vendor" referencedColumn="Id" restrictedColumn="Vendor.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+    <foreign-key name="fk_Vendor.Exchange_Exchange1" referencedTable="Exchange" referencedColumn="Id" restrictedColumn="Exchange.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+  </table>
+  <table name="Vendor.Instrument">
+    <column name="Id" type="INT" primaryKey="TRUE" autoIncrement="TRUE"/>
+    <column name="Last.Effective.Date" type="DATE" nullable="TRUE"/>
+    <column name="Sequence" type="INT"/>
+    <column name="Instrument.Id" type="INT"/>
+    <column name="Vendor.Id" type="INT"/>
+    <column name="Code" type="VARCHAR" length="45"/>
+    <index name="PRIMARY" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Id"/>
+    </index>
+    <index name="fk_Vendor.Instrument_Vendor1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Vendor.Id"/>
+    </index>
+    <index name="fk_Vendor.Instrument_Instrument1" unique="FALSE" ascendingOrder="TRUE">
+      <index-column name="Instrument.Id"/>
+    </index>
+    <foreign-key name="fk_Vendor.Instrument_Vendor1" referencedTable="Vendor" referencedColumn="Id" restrictedColumn="Vendor.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+    <foreign-key name="fk_Vendor.Instrument_Instrument1" referencedTable="Instrument" referencedColumn="Id" restrictedColumn="Instrument.Id" onUpdate="RESTRICT" onDelete="RESTRICT"/>
+  </table>
+</database>
